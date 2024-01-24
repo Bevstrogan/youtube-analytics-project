@@ -1,4 +1,5 @@
 import os
+import isodate
 from googleapiclient.discovery import build
 from datetime import timedelta
 
@@ -38,15 +39,17 @@ class PlayList:
             if not next_page_token:
                 break
 
-            video_response = self.youtube.videos().list(
-                part='contentDetails',
-                id = video_id
-            ).execute()
 
-            total_duration = timedelta()
+
+        total_duration = timedelta()
 
         for item in playlist_items:
             video_id = item['contentDetails']['videoId']
+
+            video_response = self.youtube.videos().list(
+                part='contentDetails',
+                id=video_id
+            ).execute()
 
             # Получите информацию о видео
             video_response = self.youtube.videos().list(
@@ -55,7 +58,7 @@ class PlayList:
             ).execute()
 
             duration = video_response['items'][0]['contentDetails']['duration']
-            duration = timedelta(seconds=int(duration[2:-1]))  # Преобразуйте строку в продолжительность времени
+            duration = isodate.parse_duration(duration)  # Используй isodate для корректного преобразования
             total_duration += duration
 
         return total_duration
